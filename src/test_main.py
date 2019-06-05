@@ -1,12 +1,11 @@
 from datetime import datetime
 from main import (
-    get_dataframe, data,
-    get_data,
-    join,
+    get_dummy_test_results,
+    get_test_result_dataframe,
     get_nested_groups_dataframe,
-    get_state,
     get_sensor_group_dataframe,
-    get_all_nested_sensors_for_group
+    get_all_nested_sensors_for_group,
+    get_state,
 )
 
 
@@ -26,8 +25,8 @@ child_to_parent_group_mapping = {
 
 
 def test_main():
-    data = get_data()
-    df = get_dataframe(data)
+    test_results = get_dummy_test_results()
+    df = get_test_result_dataframe(test_results)
     group_params = {
         # 'sensor_to_group_mapping': sensor_to_group_mapping,
         # 'child_to_parent_group_mapping': child_to_parent_group_mapping,

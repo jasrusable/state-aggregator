@@ -14,19 +14,9 @@ def with_timing(f):
     return inner
 
 
-data = [
-    {'date': datetime.now(), 'sensor': 'a', 'network': 'a',
-     'test': 'a', 'result': True},
-    {'date': datetime.now(), 'sensor': 'b', 'network': 'a',
-     'test': 'a', 'result': True},
-    {'date': datetime.now(), 'sensor': 'c', 'network': 'a',
-     'test': 'a', 'result': False},
-]
-
-
-def get_data():
+def get_dummy_test_results(number_of_sensors=10):
     lots_of_data = []
-    for sensor in range(10000):
+    for sensor in range(number_of_sensors):
         for network in range(20):
             for test in range(20):
                 lots_of_data.append({'date': datetime.now(), 'sensor': sensor, 'network': network,
@@ -64,14 +54,10 @@ def get_all_nested_sensors_for_group(group, sensor_to_group_mapping, child_to_pa
     return sensors
 
 
-def join(df, other_df):
-    return df.join(other_df)
-
-
-def get_dataframe(data):
+def get_test_result_dataframe(test_results):
     return pd.DataFrame(
         [[d['date'], d['sensor'], d['network'], d['test'], d['result']]
-            for d in data],
+            for d in test_results],
         columns=['date', 'sensor', 'network', 'test', 'result']
     ).set_index(['sensor', 'network', 'test'], verify_integrity=True)
 
@@ -83,7 +69,8 @@ def get_nested_groups_dataframe(child_to_parent_group_mapping):
         all_groups.add(v)
     data = set()
     for group in all_groups:
-        child_groups = get_all_nested_child_groups(group, child_to_parent_group_mapping)
+        child_groups = get_all_nested_child_groups(
+            group, child_to_parent_group_mapping)
         data.add((group, group))
         for child_group in child_groups:
             data.add((child_group, group))
@@ -102,21 +89,6 @@ def get_sensor_group_dataframe(sensor_to_group_mapping):
     return df
 
 
-def get_nested_sensor_group_dataframe(sensor_to_group_mapping, child_to_parent_group_mapping):
-    all_groups = set(sensor_to_group_mapping.values())
-    data = set()
-    for group in all_groups:
-        all_sensors_for_group = get_all_nested_sensors_for_group(
-            group, sensor_to_group_mapping, child_to_parent_group_mapping)
-        for sensor in all_sensors_for_group:
-            data.add((sensor, group))
-    df = pd.DataFrame(
-        [[r[0], r[1], True] for r in data],
-        columns=['sensor', 'group', 'True']
-    ).set_index(['sensor', 'group'])
-    return df
-
-
 def group_by(df, by):
     grouped_df = df.groupby(by=[*by, 'result'])['result'].count().unstack()
     return grouped_df
@@ -125,12 +97,15 @@ def group_by(df, by):
 @with_timing
 def get_state(df, by, params=None):
     params = params or {}
-    sensor_to_group_mapping = params.get('sensor_to_group_mapping')
+
     filters = params.get('filters')
     if filters:
         df = df.query(filters)
+
+    sensor_to_group_mapping = params.get('sensor_to_group_mapping')
     if sensor_to_group_mapping:
         df = df.join(get_sensor_group_dataframe(sensor_to_group_mapping))
+
     df = group_by(df, by)
 
     child_to_parent_group_mapping = params.get('child_to_parent_group_mapping')
