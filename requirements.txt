@@ -15,7 +15,7 @@ colorama==0.4.1
 cryptography==2.7
 dask==1.2.2
 decorator==4.4.0
-distributed==1.28.1
+distributed==2021.10.0
 docker==3.7.2
 docker-compose==1.24.0
 docker-pycreds==0.4.0
